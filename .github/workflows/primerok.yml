@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       adresa:
-        description: "Адреса на страницата со ценовник"
+        description: "Адреса на страницата со ценовник (може и повеќе, одделени со празно место)"
         required: true
         type: string
 
@@ -27,7 +27,7 @@ jobs:
       - name: Преземи ја страницата
         env:
           ADRESA: ${{ inputs.adresa }}
-        run: python -m stipakcii.primerok "$ADRESA"
+        run: python -m stipakcii.primerok $ADRESA
       - name: Зачувај го примерокот
         run: |
           git config user.name "github-actions[bot]"

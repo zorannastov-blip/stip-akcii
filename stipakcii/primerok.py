@@ -51,7 +51,15 @@ async def snimi(adresa: str, papka: Path) -> Path:
     return pateka
 
 
+async def _site(adresi: list[str]) -> None:
+    for adresa in adresi:
+        print(await snimi(adresa, Path("primeroci")))
+        await asyncio.sleep(Settings().scraper_delay_seconds)
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        raise SystemExit("употреба: python -m stipakcii.primerok <адреса>")
-    print(asyncio.run(snimi(sys.argv[1], Path("primeroci"))))
+    # Една или повеќе адреси, одделени со празно место.
+    adresi = " ".join(sys.argv[1:]).split()
+    if not adresi:
+        raise SystemExit("употреба: python -m stipakcii.primerok <адреса> [<адреса> ...]")
+    asyncio.run(_site(adresi))
