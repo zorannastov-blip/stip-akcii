@@ -1,0 +1,5 @@
+adresa: https://spar.mk/_next/static/chunks/turbopack-be178c29186105ef.js
+krajna_adresa: https://spar.mk/_next/static/chunks/turbopack-be178c29186105ef.js
+status: 200
+content-type: application/javascript; charset=UTF-8
+golemina: 10268 бајти
