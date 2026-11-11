@@ -1,0 +1,36 @@
+name: Сними примерок од страница
+
+# За нов маркет: ја презема страницата со ценовник еднаш и ја запишува во
+# primeroci/, за да може читачот да се напише врз вистински податоци.
+on:
+  workflow_dispatch:
+    inputs:
+      adresa:
+        description: "Адреса на страницата со ценовник"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  snimi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Преземи ја страницата
+        env:
+          ADRESA: ${{ inputs.adresa }}
+        run: python -m stipakcii.primerok "$ADRESA"
+      - name: Зачувај го примерокот
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add primeroci
+          git commit -m "Примерок од страница" && git push

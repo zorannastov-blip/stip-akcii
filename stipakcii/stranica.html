@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title><!--NASLOV--></title>
+<style>
+  :root {
+    --podloga: #f6f5f1; --karta: #ffffff; --tekst: #1d1c1a; --tivok: #6b6860;
+    --linija: #e3e0d8; --akcent: #0b6e4f; --akcent-tekst: #ffffff;
+    --popust: #b3261e; --novo: #0b6e4f; --predupr: #9a5b00; --cip: #ecebe5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --podloga: #151514; --karta: #1f1f1d; --tekst: #ecebe6; --tivok: #a09d94;
+      --linija: #33322f; --akcent: #4fc79d; --akcent-tekst: #0c1f18;
+      --popust: #ff8a80; --novo: #4fc79d; --predupr: #f0b45a; --cip: #2a2a27;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--podloga); color: var(--tekst);
+    font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .sirina { max-width: 46rem; margin: 0 auto; padding: 0 .9rem; }
+  header { padding: 1.1rem 0 .4rem; }
+  h1 { font-size: 1.35rem; line-height: 1.2; margin: 0 0 .2rem; }
+  .pod { color: var(--tivok); font-size: .92rem; margin: 0; }
+  .znamence {
+    margin: .7rem 0 0; padding: .6rem .75rem; border-radius: .6rem;
+    border: 1px solid var(--predupr); color: var(--predupr); font-size: .9rem;
+  }
+  .lenta {
+    position: sticky; top: 0; z-index: 5; background: var(--podloga);
+    padding: .55rem 0 .5rem; border-bottom: 1px solid var(--linija);
+  }
+  .jazicinja { display: flex; gap: .35rem; margin-bottom: .5rem; }
+  .jazicinja button {
+    flex: 1; min-height: 2.6rem; border: 1px solid var(--linija); border-radius: .6rem;
+    background: var(--karta); color: var(--tekst); font: inherit; font-size: .92rem;
+  }
+  .jazicinja button[aria-selected="true"] {
+    background: var(--akcent); border-color: var(--akcent); color: var(--akcent-tekst); font-weight: 600;
+  }
+  input[type="search"], select {
+    width: 100%; min-height: 2.75rem; padding: .5rem .75rem; font: inherit;
+    color: var(--tekst); background: var(--karta);
+    border: 1px solid var(--linija); border-radius: .6rem;
+  }
+  .cipovi { display: flex; gap: .35rem; overflow-x: auto; padding: .5rem 0 .1rem; scrollbar-width: none; }
+  .cipovi::-webkit-scrollbar { display: none; }
+  .cip {
+    flex: none; min-height: 2.25rem; padding: .3rem .8rem; border-radius: 99rem;
+    border: 1px solid var(--linija); background: var(--cip); color: var(--tekst);
+    font: inherit; font-size: .88rem; white-space: nowrap;
+  }
+  .cip[aria-pressed="true"] { background: var(--tekst); border-color: var(--tekst); color: var(--podloga); }
+  .red-alatki { display: flex; gap: .5rem; align-items: center; padding-top: .45rem; }
+  .red-alatki select { flex: 1; min-height: 2.4rem; font-size: .9rem; }
+  .broj { color: var(--tivok); font-size: .88rem; white-space: nowrap; }
+  main { padding: .7rem 0 2rem; }
+  .karta {
+    background: var(--karta); border: 1px solid var(--linija); border-radius: .75rem;
+    padding: .75rem .85rem; margin-bottom: .55rem;
+  }
+  .naziv { font-weight: 600; overflow-wrap: anywhere; }
+  .opis { color: var(--tivok); font-size: .82rem; overflow-wrap: anywhere; }
+  .ceni { display: flex; flex-wrap: wrap; align-items: baseline; gap: .15rem .6rem; margin: .35rem 0 .3rem; }
+  .cena { font-size: 1.3rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .redovna { color: var(--tivok); text-decoration: line-through; font-variant-numeric: tabular-nums; }
+  .pct { color: var(--popust); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .edinecna { color: var(--tivok); font-size: .82rem; }
+  .meta { color: var(--tivok); font-size: .86rem; overflow-wrap: anywhere; }
+  .meta b { color: var(--tekst); font-weight: 600; }
+  .oznaki { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
+  .oznaka {
+    font-size: .76rem; font-weight: 600; padding: .12rem .5rem; border-radius: .4rem;
+    border: 1px solid currentColor;
+  }
+  .oznaka.novo { color: var(--novo); }
+  .oznaka.predupr, .oznaka.kart { color: var(--predupr); }
+  .oznaka.tivka { color: var(--tivok); font-weight: 500; }
+  .gore { color: var(--popust); font-weight: 700; }
+  .dolu { color: var(--novo); font-weight: 700; }
+  .uste {
+    width: 100%; min-height: 2.9rem; margin-top: .4rem; border-radius: .6rem;
+    border: 1px solid var(--linija); background: var(--karta); color: var(--tekst); font: inherit;
+  }
+  .prazno { text-align: center; color: var(--tivok); padding: 2.5rem 1rem; }
+  footer { color: var(--tivok); font-size: .82rem; padding: 0 0 2.5rem; }
+  button, select, input { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 2px solid var(--akcent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="sirina">
+  <header>
+    <h1 id="naslov">Акции</h1>
+    <p class="pod" id="zbir"></p>
+    <p class="znamence" id="zastareno" hidden></p>
+  </header>
+
+  <div class="lenta">
+    <div class="jazicinja" role="tablist">
+      <button role="tab" data-pogled="akcii" aria-selected="true">Акции</button>
+      <button role="tab" data-pogled="promeni" aria-selected="false">Промени на цени</button>
+      <button role="tab" data-pogled="izvori" aria-selected="false">Извори</button>
+    </div>
+    <div id="alatki">
+      <input type="search" id="baraj" placeholder="Барај производ, на пр. кафе" autocomplete="off" aria-label="Барај производ">
+      <div class="cipovi" id="filtri"></div>
+      <div class="cipovi" id="sinjiri"></div>
+      <div class="red-alatki">
+        <select id="podredi" aria-label="Подреди">
+          <option value="pct">Најголем попуст</option>
+          <option value="cena">Најниска цена</option>
+          <option value="istek">Истекува најскоро</option>
+          <option value="naziv">По назив</option>
+        </select>
+        <span class="broj" id="broj"></span>
+      </div>
+    </div>
+  </div>
+
+  <main id="sodrzina"></main>
+
+  <footer>
+    <p id="legenda"></p>
+    <p>Цените се од ценовниците што маркетите јавно ги објавуваат на своите страници. Важи цената на каса.</p>
+    <p id="izraboteno"></p>
+  </footer>
+</div>
+
+<script>
+const D = /*PODATOCI*/null;
+
+const el = (id) => document.getElementById(id);
+const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (z) => (
+  { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[z]
+));
+const cena = (x) => x == null ? "–"
+  : x.toFixed(2).replace(/\.?0+$/, "").replace(".", ",") + " ден";
+const datum = (iso) => iso ? iso.slice(8, 10) + "." + iso.slice(5, 7) + "." : "";
+const kade = (a) => a.site ? "сите продавници" : a.p.join(", ");
+
+const sostojba = {
+  pogled: "akcii", baraj: "", filter: "site", sinjiri: new Set(),
+  podredi: "pct", prikazani: 120,
+};
+const STRANA = 120;
+
+function izberi() {
+  const zborovi = sostojba.baraj.toLowerCase().split(/\s+/).filter(Boolean);
+  const lista = D.akcii.filter((a) => {
+    if (sostojba.sinjiri.size && !sostojba.sinjiri.has(a.sk)) return false;
+    if (sostojba.filter === "novi" && !a.nov) return false;
+    if (sostojba.filter === "istek" && !a.istek) return false;
+    if (sostojba.filter === "moi" && !a.sl) return false;
+    if (sostojba.filter === "idni" ? !a.idna : a.idna) return false;
+    if (!zborovi.length) return true;
+    const tekst = (a.n + " " + a.o + " " + a.s).toLowerCase();
+    return zborovi.every((z) => tekst.includes(z));
+  });
+  const red = {
+    pct: (a, b) => (b.pct || 0) - (a.pct || 0) || a.n.localeCompare(b.n, "mk"),
+    cena: (a, b) => (a.c ?? 1e9) - (b.c ?? 1e9) || a.n.localeCompare(b.n, "mk"),
+    istek: (a, b) => (a.do || "9999").localeCompare(b.do || "9999") || (b.pct || 0) - (a.pct || 0),
+    naziv: (a, b) => a.n.localeCompare(b.n, "mk"),
+  }[sostojba.podredi];
+  return lista.sort(red);
+}
+
+function kartaAkcija(a) {
+  const oznaki = [];
+  if (a.nov) oznaki.push('<span class="oznaka novo">ново денес</span>');
+  if (a.idna) oznaki.push(`<span class="oznaka tivka">почнува ${datum(a.od)}</span>`);
+  if (a.kart) oznaki.push('<span class="oznaka kart">само со картичка</span>');
+  if (a.viden) oznaki.push(`<span class="oznaka tivka">од читањето на ${datum(a.viden)}</span>`);
+  if (a.pred) oznaki.push(`<span class="oznaka predupr">${esc(a.pred)}</span>`);
+  const edinecna = a.e ? `<span class="edinecna">${cena(a.e)}${a.ed ? " / " + esc(a.ed) : ""}</span>` : "";
+  const do_ = a.do ? ` · до ${datum(a.do)}` : "";
+  return `<article class="karta">
+    <div class="naziv">${esc(a.n)}</div>
+    ${a.o ? `<div class="opis">${esc(a.o)}</div>` : ""}
+    <div class="ceni">
+      <span class="cena">${cena(a.c)}</span>
+      ${a.r != null ? `<span class="redovna">${cena(a.r)}</span>` : ""}
+      ${a.pct ? `<span class="pct">−${String(a.pct).replace(".", ",")}%</span>` : ""}
+      ${edinecna}
+    </div>
+    <div class="meta"><b>${esc(a.s)}</b> · ${esc(kade(a))}${do_}</div>
+    ${oznaki.length ? `<div class="oznaki">${oznaki.join("")}</div>` : ""}
+  </article>`;
+}
+
+function crtajAkcii() {
+  const lista = izberi();
+  el("broj").textContent = lista.length + " ставки";
+  if (!lista.length) {
+    const prazna = sostojba.filter === "moi" && !sostojba.baraj
+      ? "Денес нема акција за производите што ги следиш."
+      : "Нема акции за овој избор.";
+    el("sodrzina").innerHTML = `<p class="prazno">${prazna}</p>`;
+    return;
+  }
+  const del = lista.slice(0, sostojba.prikazani).map(kartaAkcija).join("");
+  const ostanati = lista.length - sostojba.prikazani;
+  el("sodrzina").innerHTML = del + (ostanati > 0
+    ? `<button class="uste" id="uste">Прикажи уште ${Math.min(ostanati, STRANA)} од ${ostanati}</button>` : "");
+  const kopce = el("uste");
+  if (kopce) kopce.onclick = () => { sostojba.prikazani += STRANA; crtajAkcii(); };
+}
+
+function crtajPromeni() {
+  if (!D.promeni.length) {
+    el("sodrzina").innerHTML = '<p class="prazno">Денес нема променета редовна цена во однос на претходното читање.</p>';
+    return;
+  }
+  const lista = [...D.promeni].sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct));
+  el("sodrzina").innerHTML = lista.slice(0, 400).map((x) => `<article class="karta">
+    <div class="naziv">${esc(x.n)}</div>
+    <div class="ceni">
+      <span class="redovna">${cena(x.stara)}</span>
+      <span class="cena">${cena(x.nova)}</span>
+      <span class="${x.pct > 0 ? "gore" : "dolu"}">${x.pct > 0 ? "+" : "−"}${String(Math.abs(x.pct)).replace(".", ",")}%</span>
+    </div>
+    <div class="meta"><b>${esc(x.s)}</b> · ${esc([...new Set(x.p)].join(", "))}</div>
+  </article>`).join("");
+}
+
+const STATUSI = {
+  ok: "прочитан", prazen: "објавен празен ценовник",
+  padna: "не се прочита", ja_nema: "ја нема кај изворот",
+  nema: "нема продавница во градот",
+};
+
+function crtajIzvori() {
+  if (!D.prodavnici.length) {
+    el("sodrzina").innerHTML = '<p class="prazno">Уште нема ниту едно читање.</p>';
+    return;
+  }
+  el("sodrzina").innerHTML = D.prodavnici.map((z) => {
+    const dobro = z.status === "ok";
+    const brojki = z.redovi ? `${esc(z.redovi)} производи · ${esc(z.akcii)} акции` : "";
+    const koga = z.posledno_uspesno ? `прочитан ${datum(z.posledno_uspesno)}` : "уште не е прочитан";
+    return `<article class="karta">
+      <div class="naziv">${esc(z.sinjir_ime)} · ${esc(z.prodavnica)}</div>
+      ${z.adresa ? `<div class="opis">${esc(z.adresa)}</div>` : ""}
+      <div class="meta"><span class="${dobro ? "dolu" : "gore"}">${esc(STATUSI[z.status] || z.status)}</span>
+        · ${[brojki, koga].filter(Boolean).join(" · ")}</div>
+      ${!dobro && z.poraka ? `<div class="opis">${esc(z.poraka)}</div>` : ""}
+    </article>`;
+  }).join("");
+}
+
+function crtaj() {
+  el("alatki").hidden = sostojba.pogled !== "akcii";
+  ({ akcii: crtajAkcii, promeni: crtajPromeni, izvori: crtajIzvori })[sostojba.pogled]();
+}
+
+function cip(roditel, tekst, pritisnat, naKlik) {
+  const k = document.createElement("button");
+  k.className = "cip";
+  k.textContent = tekst;
+  k.setAttribute("aria-pressed", pritisnat);
+  k.onclick = () => naKlik(k);
+  roditel.appendChild(k);
+  return k;
+}
+
+function postavi() {
+  if (!D) {
+    el("sodrzina").innerHTML = '<p class="prazno">Страницата уште нема податоци. Пушти го читањето.</p>';
+    el("alatki").hidden = true;
+    return;
+  }
+  const vazecki = D.akcii.filter((a) => !a.idna);
+  const broi = (uslov) => vazecki.filter(uslov).length;
+  el("naslov").textContent = "Акции во " + D.grad;
+  el("zbir").textContent = `${datum(D.datum)}${D.datum.slice(0, 4)} · ${vazecki.length} акции · `
+    + `${broi((a) => a.nov)} нови · ${broi((a) => a.istek)} истекуваат`;
+  el("izraboteno").textContent = "Изработено " + D.izraboteno + ".";
+  el("legenda").textContent = "Предупредувањето за покачена цена гледа " + D.denovi + " дена наназад.";
+
+  const denes = new Date();
+  const lokalno = denes.getFullYear() + "-" + String(denes.getMonth() + 1).padStart(2, "0")
+    + "-" + String(denes.getDate()).padStart(2, "0");
+  if (D.datum !== lokalno) {
+    el("zastareno").hidden = false;
+    el("zastareno").textContent = "Податоците се од " + datum(D.datum)
+      + " Денешното читање уште не поминало или не успеало.";
+  }
+  const padnati = D.prodavnici.filter((z) => z.status !== "ok").length;
+  if (padnati) {
+    const p = document.createElement("p");
+    p.className = "znamence";
+    p.textContent = padnati + " од " + D.prodavnici.length
+      + " продавници немаат денешен ценовник. Види „Извори“.";
+    el("zastareno").after(p);
+  }
+
+  const filtri = [
+    ["site", "Сите"], ["novi", "Нови денес"], ["istek", "Истекуваат"],
+    ...(D.sledi.length ? [["moi", "Мои производи"]] : []),
+    ...(D.akcii.some((a) => a.idna) ? [["idni", "Најавени"]] : []),
+  ];
+  const kopcinja = filtri.map(([kod, ime]) => cip(el("filtri"), ime, kod === "site", () => {
+    sostojba.filter = kod; sostojba.prikazani = STRANA;
+    kopcinja.forEach((k, i) => k.setAttribute("aria-pressed", filtri[i][0] === kod));
+    crtaj();
+  }));
+
+  const iminja = new Map(D.akcii.map((a) => [a.sk, a.s]));
+  [...iminja].sort((a, b) => a[1].localeCompare(b[1], "mk")).forEach(([kod, ime]) => {
+    cip(el("sinjiri"), ime, false, (k) => {
+      sostojba.sinjiri.has(kod) ? sostojba.sinjiri.delete(kod) : sostojba.sinjiri.add(kod);
+      k.setAttribute("aria-pressed", sostojba.sinjiri.has(kod));
+      sostojba.prikazani = STRANA; crtaj();
+    });
+  });
+
+  let cekanje;
+  el("baraj").oninput = (e) => {
+    clearTimeout(cekanje);
+    cekanje = setTimeout(() => {
+      sostojba.baraj = e.target.value; sostojba.prikazani = STRANA; crtaj();
+    }, 120);
+  };
+  el("podredi").onchange = (e) => { sostojba.podredi = e.target.value; crtaj(); };
+  document.querySelectorAll("[data-pogled]").forEach((k) => {
+    k.onclick = () => {
+      sostojba.pogled = k.dataset.pogled;
+      document.querySelectorAll("[data-pogled]").forEach((d) =>
+        d.setAttribute("aria-selected", d === k));
+      crtaj();
+    };
+  });
+  crtaj();
+}
+
+postavi();
+</script>
+</body>
+</html>

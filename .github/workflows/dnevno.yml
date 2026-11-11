@@ -1,0 +1,45 @@
+name: Дневно читање
+
+on:
+  schedule:
+    # 09:37 UTC е 10:37 зиме и 11:37 лете по скопско време, понеделник-сабота.
+    # Маркетите се должни да ги ажурираат цените до 10 часот.
+    - cron: "37 9 * * 1-6"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dnevno-citanje
+  cancel-in-progress: false
+
+jobs:
+  citaj:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Инсталирај ги библиотеките
+        run: pip install -r requirements.txt
+
+      - name: Прочитај ги ценовниците и изгради го извештајот
+        run: python -m stipakcii
+
+      - name: Зачувај ги податоците во репото
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add podatoci docs IZVESTAJ.md
+          if git diff --cached --quiet; then
+            echo "Нема промени за запишување."
+          else
+            git commit -m "Цени за $(TZ=Europe/Skopje date +%d.%m.%Y)"
+            git push
+          fi
