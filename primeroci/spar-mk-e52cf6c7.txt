@@ -1,5 +1,0 @@
-adresa: https://spar.mk/pricelist
-krajna_adresa: https://spar.mk/pricelist
-status: 200
-content-type: text/html; charset=utf-8
-golemina: 21829 бајти

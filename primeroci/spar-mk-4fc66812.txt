@@ -1,5 +1,0 @@
-adresa: https://spar.mk/_next/static/chunks/86a8e32f9f55301f.js
-krajna_adresa: https://spar.mk/_next/static/chunks/86a8e32f9f55301f.js
-status: 200
-content-type: application/javascript; charset=UTF-8
-golemina: 56419 бајти
