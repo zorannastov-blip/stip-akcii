@@ -120,7 +120,7 @@ def _ist_zbor(a: str, b: str) -> bool:
     if a == b:
         return True
     kratok, dolg = (a, b) if len(a) <= len(b) else (b, a)
-    return len(kratok) >= 4 and dolg.startswith(kratok)
+    return len(kratok) >= 5 and dolg.startswith(kratok)
 
 
 def se_sovpagaat(a: Potpis, b: Potpis) -> bool:

@@ -50,3 +50,10 @@ def test_sporedba_spojuva_ist_proizvod_megju_marketi():
     assert not isti("НИВЕА КРЕМА 250 МЛ.", "ГЕЛ ЗА ТУШ НИВЕА 250мл КРЕМ КЕР")
     # без количина не се споредува
     assert potpis("НЕСКАФЕ КЛАСИК 3ВО1") is None
+
+
+def test_kratka_skratenica_ne_spojuva_razlicni_brendovi():
+    from stipakcii.sporedba import potpis, se_sovpagaat
+
+    a, b = potpis("КАФЕ ИНСТАГРАНД 200гр КЛАСИК"), potpis("КАФЕ ИНСТ.НЕСКАФЕ КЛАСИК 200ГР")
+    assert not se_sovpagaat(a, b)
