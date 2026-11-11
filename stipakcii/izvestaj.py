@@ -18,6 +18,7 @@ from typing import Any
 from stipakcii.citaci.parsing import normalize_for_match
 from stipakcii.postavki import Postavki
 from stipakcii.skladiste import citaj_csv, s2d, s2dat
+from stipakcii.sporedba import sporedi
 
 # Колку дена наназад се бара покачување на редовната цена пред акција.
 DENOVI_ZA_POKACUVANJE = 45
@@ -31,6 +32,7 @@ class Podatoci:
     prodavnici: list[dict[str, Any]] = field(default_factory=list)
     akcii: list[dict[str, Any]] = field(default_factory=list)
     promeni: list[dict[str, Any]] = field(default_factory=list)
+    sporedbi: list[dict[str, Any]] = field(default_factory=list)
     sledi: list[str] = field(default_factory=list)
 
 
@@ -167,6 +169,27 @@ def soberi(koren: Path, postavki: Postavki, denes: date) -> Podatoci:
         stavka["p"].append(ime_na.get((z["sinjir"], z["prodavnica_id"]), z["prodavnica_id"]))
     promeni = sorted(promeni_grupi.values(), key=lambda p: (p["pct"], p["n"]))
 
+    sporedbi = []
+    for sp in sporedi(koren, prodavnici):
+        kluc = " ".join(normalize_for_match(x.naziv) for x in sp.ponudi)
+        sporedbi.append(
+            {
+                "n": sp.naziv,
+                "pct": float(sp.razlika_pct),
+                "raz": float(sp.najvisoka - sp.najniska),
+                "sl": _se_sledi(kluc, sledi),
+                "p": [
+                    {
+                        "s": sinjir_ime.get(x.sinjir, x.sinjir),
+                        "n": x.naziv,
+                        "c": float(x.cena),
+                        "akc": x.akcija,
+                    }
+                    for x in sp.ponudi
+                ],
+            }
+        )
+
     return Podatoci(
         datum=denes,
         grad=postavki.grad,
@@ -174,6 +197,7 @@ def soberi(koren: Path, postavki: Postavki, denes: date) -> Podatoci:
         prodavnici=prodavnici,
         akcii=akcii,
         promeni=promeni,
+        sporedbi=sporedbi,
         sledi=list(postavki.sledi),
     )
 
@@ -221,6 +245,20 @@ def _tabela_akcii(akcii: list[dict[str, Any]], najmnogu: int) -> list[str]:
     return linii
 
 
+def _tabela_sporedba(sporedbi: list[dict[str, Any]], najmnogu: int) -> list[str]:
+    linii = ["| Производ | Најевтино | Другаде | Разлика |", "|---|---|---|--:|"]
+    for x in sporedbi[:najmnogu]:
+        prva, ostanati = x["p"][0], x["p"][1:]
+        linii.append(
+            f"| {_md(x['n'])} | **{_cena(prva['c'])}** {prva['s']}{' ★' if prva['akc'] else ''} "
+            f"| {'; '.join(f'{_cena(o["c"])} {o["s"]}' for o in ostanati)} "
+            f"| {_cena(x['raz'])} (−{_procent(x['pct'])}%) |"
+        )
+    if len(sporedbi) > najmnogu:
+        linii.append(f"\n…и уште {len(sporedbi) - najmnogu}. Сите се на страницата.")
+    return linii
+
+
 STATUSI = {
     "ok": "✅ прочитан",
     "prazen": "⚪ објавен празен ценовник",
@@ -265,6 +303,22 @@ def markdown(p: Podatoci) -> str:
     if vazecki:
         linii += ["", "## Најголеми попусти", "", *_tabela_akcii(vazecki, 40)]
 
+    if p.sporedbi:
+        so_razlika = [x for x in p.sporedbi if x["pct"] > 0]
+        moi_sp = [x for x in so_razlika if x["sl"]]
+        linii += [
+            "",
+            "## Ист производ, различна цена",
+            "",
+            f"Споени се **{len(p.sporedbi)}** производи што ги има во повеќе маркети; "
+            f"кај **{len(so_razlika)}** цената се разликува. Спојувањето е по назив, "
+            "па провери дали називите навистина се однесуваат на истата стока. "
+            "★ значи дека најниската цена е акциска.",
+        ]
+        if moi_sp:
+            linii += ["", "### Твои производи", "", *_tabela_sporedba(moi_sp, 50)]
+        linii += ["", "### Најголеми разлики", "", *_tabela_sporedba(so_razlika, 30)]
+
     if p.promeni:
         poskapeni = [x for x in p.promeni if x["pct"] > 0][::-1][:15]
         poevtineti = [x for x in p.promeni if x["pct"] < 0][:15]
@@ -302,6 +356,7 @@ def html(p: Podatoci) -> str:
         "prodavnici": p.prodavnici,
         "akcii": p.akcii,
         "promeni": p.promeni,
+        "sporedbi": p.sporedbi,
         "sledi": p.sledi,
     }
     vgradeno = json.dumps(sodrzina, ensure_ascii=False, separators=(",", ":"))

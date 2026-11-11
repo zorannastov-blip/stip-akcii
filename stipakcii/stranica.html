@@ -82,6 +82,9 @@
   .oznaka.novo { color: var(--novo); }
   .oznaka.predupr, .oznaka.kart { color: var(--predupr); }
   .oznaka.tivka { color: var(--tivok); font-weight: 500; }
+  .red-sp { display: grid; grid-template-columns: 5.2rem 1fr; gap: .6rem; padding: .4rem 0;
+    border-top: 1px solid var(--linija); font-size: .9rem; font-variant-numeric: tabular-nums; }
+  [hidden] { display: none !important; }
   .gore { color: var(--popust); font-weight: 700; }
   .dolu { color: var(--novo); font-weight: 700; }
   .uste {
@@ -105,7 +108,8 @@
   <div class="lenta">
     <div class="jazicinja" role="tablist">
       <button role="tab" data-pogled="akcii" aria-selected="true">Акции</button>
-      <button role="tab" data-pogled="promeni" aria-selected="false">Промени на цени</button>
+      <button role="tab" data-pogled="sporedba" aria-selected="false">Споредба</button>
+      <button role="tab" data-pogled="promeni" aria-selected="false">Промени</button>
       <button role="tab" data-pogled="izvori" aria-selected="false">Извори</button>
     </div>
     <div id="alatki">
@@ -213,6 +217,40 @@ function crtajAkcii() {
   if (kopce) kopce.onclick = () => { sostojba.prikazani += STRANA; crtajAkcii(); };
 }
 
+function crtajSporedba() {
+  const zborovi = sostojba.baraj.toLowerCase().split(/\s+/).filter(Boolean);
+  const lista = (D.sporedbi || []).filter((x) => {
+    if (sostojba.filter === "moi" && !x.sl) return false;
+    if (!zborovi.length) return true;
+    const tekst = x.p.map((o) => o.n + " " + o.s).join(" ").toLowerCase();
+    return zborovi.every((z) => tekst.includes(z));
+  });
+  el("broj").textContent = lista.length + " производи";
+  if (!lista.length) {
+    el("sodrzina").innerHTML = '<p class="prazno">Нема споени производи за овој избор.</p>';
+    return;
+  }
+  const del = lista.slice(0, sostojba.prikazani).map((x) => `<article class="karta">
+    <div class="ceni">
+      <span class="cena">${cena(x.p[0].c)}</span>
+      <span class="meta"><b>${esc(x.p[0].s)}</b></span>
+      ${x.pct ? `<span class="pct">−${String(x.pct).replace(".", ",")}%</span>
+      <span class="edinecna">заштеда ${cena(x.raz)}</span>` : '<span class="edinecna">иста цена секаде</span>'}
+    </div>
+    ${x.p.map((o, i) => `<div class="red-sp">
+      <span class="${i ? "" : "dolu"}">${cena(o.c)}</span>
+      <span><b>${esc(o.s)}</b>${o.akc ? " · акција" : ""}<br><span class="opis">${esc(o.n)}</span></span>
+    </div>`).join("")}
+  </article>`).join("");
+  const ostanati = lista.length - sostojba.prikazani;
+  el("sodrzina").innerHTML =
+    '<p class="pod" style="margin:0 0 .6rem">Спојувањето е по назив. Провери дали називите се однесуваат на истата стока.</p>'
+    + del + (ostanati > 0
+    ? `<button class="uste" id="uste">Прикажи уште ${Math.min(ostanati, STRANA)} од ${ostanati}</button>` : "");
+  const kopce = el("uste");
+  if (kopce) kopce.onclick = () => { sostojba.prikazani += STRANA; crtajSporedba(); };
+}
+
 function crtajPromeni() {
   if (!D.promeni.length) {
     el("sodrzina").innerHTML = '<p class="prazno">Денес нема променета редовна цена во однос на претходното читање.</p>';
@@ -256,8 +294,11 @@ function crtajIzvori() {
 }
 
 function crtaj() {
-  el("alatki").hidden = sostojba.pogled !== "akcii";
-  ({ akcii: crtajAkcii, promeni: crtajPromeni, izvori: crtajIzvori })[sostojba.pogled]();
+  const sp = sostojba.pogled === "sporedba";
+  el("alatki").hidden = sostojba.pogled !== "akcii" && !sp;
+  el("sinjiri").hidden = sp;
+  el("podredi").hidden = sp;
+  ({ akcii: crtajAkcii, sporedba: crtajSporedba, promeni: crtajPromeni, izvori: crtajIzvori })[sostojba.pogled]();
 }
 
 function cip(roditel, tekst, pritisnat, naKlik) {

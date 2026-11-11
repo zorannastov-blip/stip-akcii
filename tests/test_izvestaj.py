@@ -29,3 +29,24 @@ def test_pokacena_redovna_cena_pred_akcija_se_oznacuva(tmp_path):
 
     tekst = markdown(p)
     assert "## Нови денес" in tekst and "⚠ Леб" in tekst and "💳 Сок" in tekst
+
+
+def test_sporedba_spojuva_ist_proizvod_megju_marketi():
+    from stipakcii.sporedba import potpis, se_sovpagaat
+
+    def isti(a, b):
+        pa, pb = potpis(a), potpis(b)
+        return bool(pa and pb and se_sovpagaat(pa, pb))
+
+    assert isti("КАФЕ ЕСПРЕСО МЕЛЕНО ЛАВАЦА ОРО 250ГР", "ЛАВАЦА КАФЕ ОРО 250 ГР")
+    assert isti("МЛЕКО БИТОЛСКО 1л 1.5%", "БИТОЛСКО МЛЕКО 1.5% ММ 1Л")
+    assert isti("ЗЛАТЕН ДАБ ПИВО 0.33Л", "ПИВО ЗЛАТЕН ДАБ 330мл")
+    # иста стока, друга количина или друг процент: НЕ е исто
+    assert not isti("ЛАВАЦА КАФЕ ОРО 250 ГР", "ЛАВАЦА КАФЕ ОРО 500 ГР")
+    assert not isti("МЛЕКО БИТОЛСКО 1л 1.5%", "БИТОЛСКО МЛЕКО 2.8% ММ 1Л")
+    # друг вид од истиот бренд
+    assert not isti("ЛАВАЦА КАФЕ ОРО 250 ГР", "ЛАВАЦА КАФЕ РОСА 250Г.")
+    # кус назив не смее да се залепи за подолг
+    assert not isti("НИВЕА КРЕМА 250 МЛ.", "ГЕЛ ЗА ТУШ НИВЕА 250мл КРЕМ КЕР")
+    # без количина не се споредува
+    assert potpis("НЕСКАФЕ КЛАСИК 3ВО1") is None
