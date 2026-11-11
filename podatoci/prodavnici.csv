@@ -1,0 +1,14 @@
+sinjir,sinjir_ime,prodavnica_id,prodavnica,adresa,status,poraka,datum_cenovnik,redovi,akcii,posledno_uspesno,izvor
+kam,КАМ,23,Штип - 1,ул. Сремски Фронт бр. 7,ok,,2026-11-11,1935,58,2026-11-11,https://kam.mk/2026/11/11/23.pdf
+kam,КАМ,36,Штип - 2,Кеј Маршал Тито бр.19,ok,,2026-11-11,1895,61,2026-11-11,https://kam.mk/2026/11/11/36.pdf
+kam,КАМ,46,Штип - 3,ул. Сутјеска бб,ok,,2026-11-11,1537,54,2026-11-11,https://kam.mk/2026/11/11/46.pdf
+kipper,Кипер,,(целиот синџир),,padna,SourceUnavailable: https://kipper.mk/mk/marketet/ врати 403,,,,,
+ramstore,Рамстор,ramstore-shtip,РАМСТОРЕ ШТИП,"ул. Тошо Арсов бр. 32, Штип",ok,,2026-11-11,5928,960,2026-11-11,https://ramstore.com.mk/marketi/ramstore-shtip/
+ramstore,Рамстор,ramstore-shtip-luna,РАМСТОРЕ ШТИП ЛУНА,"Ул. Борис Крајгер бр.20А, Штип",ok,,2026-11-11,7719,1159,2026-11-11,https://ramstore.com.mk/marketi/ramstore-shtip-luna/
+stokomak,Стокомак,30,ШТИП,,ok,,,2542,54,2026-11-11,https://stokomak.proverkanaceni.mk/?org=30
+stokomak,Стокомак,46,ШТИП 2,,ok,,,3077,57,2026-11-11,https://stokomak.proverkanaceni.mk/?org=46
+stokomak,Стокомак,71,ШТИП 3,,ok,,,2809,58,2026-11-11,https://stokomak.proverkanaceni.mk/?org=71
+zito,Жито маркети,24,24 Штип Сењак,,ok,,,1,0,2026-11-11,https://zito.proverkanaceni.mk/?org=24
+zito,Жито маркети,75,75 Жито Штип 2 Влез,,ok,,,5542,651,2026-11-11,https://zito.proverkanaceni.mk/?org=75
+zito,Жито маркети,76,76 Жито Штип Центар,,prazen,https://zito.proverkanaceni.mk/?org=76: ценовникот нема ред,,,,,https://zito.proverkanaceni.mk/?org=76
+zito,Жито маркети,89,89 Штип градинка,,ok,,,7,0,2026-11-11,https://zito.proverkanaceni.mk/?org=89
