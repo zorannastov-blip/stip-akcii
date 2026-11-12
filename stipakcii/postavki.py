@@ -5,6 +5,7 @@ from __future__ import annotations
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 STANDARDEN_AGENT = "stip-akcii/0.1 (licno dnevno citanje na javni cenovnici)"
 
@@ -26,6 +27,9 @@ class Postavki:
     # Зборови што се следат: секој запис е еден или повеќе збора што СИТЕ
     # мора да ги има називот („кафе нескафе").
     sledi: tuple[str, ...] = ()
+    # Основни производи за кои се бара најевтиниот маркет: записите
+    # [[kosnicka]] како што се напишани; ги чита и проверува kosnicka.py.
+    kosnicka: tuple[dict[str, Any], ...] = ()
     # Најмногу минути за една продавница, за читањето да не виси.
     minuti_po_prodavnica: int = 25
     mreza: Settings = field(default_factory=Settings)
@@ -64,6 +68,7 @@ def vcitaj(pateka: Path | None) -> Postavki:
         grad=str(surovo.get("grad", osnovno.grad)),
         sinjiri=tuple(surovo.get("sinjiri", osnovno.sinjiri)),
         sledi=tuple(str(z) for z in surovo.get("sledi", ())),
+        kosnicka=tuple(dict(z) for z in surovo.get("kosnicka", ())),
         minuti_po_prodavnica=int(
             surovo.get("minuti_po_prodavnica", osnovno.minuti_po_prodavnica)
         ),

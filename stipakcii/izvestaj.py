@@ -15,10 +15,13 @@ from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 from typing import Any
 
+from stipakcii import dnevnik, kosnicka
 from stipakcii.citaci.parsing import normalize_for_match
 from stipakcii.postavki import Postavki
 from stipakcii.skladiste import citaj_csv, s2d, s2dat
 from stipakcii.sporedba import sporedi
+
+log = dnevnik.get_logger("stipakcii.izvestaj")
 
 # Колку дена наназад се бара покачување на редовната цена пред акција.
 DENOVI_ZA_POKACUVANJE = 45
@@ -34,6 +37,8 @@ class Podatoci:
     promeni: list[dict[str, Any]] = field(default_factory=list)
     sporedbi: list[dict[str, Any]] = field(default_factory=list)
     sledi: list[str] = field(default_factory=list)
+    # Основните производи по маркет; празно ако во поставките нема [[kosnicka]].
+    kosnicka: dict[str, Any] = field(default_factory=dict)
 
 
 # --------------------------------------------------------------------------
@@ -191,6 +196,7 @@ def soberi(koren: Path, postavki: Postavki, denes: date) -> Podatoci:
         )
 
     return Podatoci(
+        kosnicka=_kosnicka(koren, postavki, prodavnici, sinjir_ime),
         datum=denes,
         grad=postavki.grad,
         izraboteno=datetime.now().astimezone().strftime("%d.%m.%Y %H:%M"),
@@ -200,6 +206,39 @@ def soberi(koren: Path, postavki: Postavki, denes: date) -> Podatoci:
         sporedbi=sporedbi,
         sledi=list(postavki.sledi),
     )
+
+
+def _kosnicka(
+    koren: Path, postavki: Postavki, prodavnici: list[dict[str, str]], sinjir_ime: dict[str, str]
+) -> dict[str, Any]:
+    if not postavki.kosnicka:
+        return {}
+    # Кошничката е додаток: грешка во неа не смее да го остави денот без
+    # извештај за акциите. Се запишува и се прикажува наместо табелата.
+    try:
+        stavki, greski = kosnicka.stavki_od(postavki.kosnicka)
+        # „Само во ..." се пишува кога цената не важи во сите продавници на
+        # синџирот. Продавница со неколку реда во ценовникот не се брои.
+        redovi = {
+            (z["sinjir"], z["prodavnica"]): int(z["redovi"] or 0)
+            for z in prodavnici
+            if z["status"] == "ok" and z["prodavnica_id"]
+        }
+        najgolema: dict[str, int] = defaultdict(int)
+        for (sinjir, _), broj in redovi.items():
+            najgolema[sinjir] = max(najgolema[sinjir], broj)
+        vo_sinjir: dict[str, set[str]] = defaultdict(set)
+        for (sinjir, prodavnica), broj in redovi.items():
+            if broj * 10 >= najgolema[sinjir]:
+                vo_sinjir[sinjir].add(prodavnica)
+        sostavena = kosnicka.sostavi(koren, prodavnici, stavki)
+        ishod = kosnicka.za_izvestaj(sostavena, sinjir_ime, vo_sinjir)
+        ishod["greski"] = greski
+        return ishod
+    except Exception as greska:  # noqa: BLE001
+        log.exception("Кошничката не се пресмета")
+        poraka = f"кошничката не се пресмета ({type(greska).__name__}: {greska})"
+        return {"stavki": [], "zbirovi": [], "nenajdeni": [], "greski": [poraka]}
 
 
 # --------------------------------------------------------------------------
@@ -259,6 +298,64 @@ def _tabela_sporedba(sporedbi: list[dict[str, Any]], najmnogu: int) -> list[str]
     return linii
 
 
+def _md_kosnicka(k: dict[str, Any]) -> list[str]:
+    linii = ["", "## Кошничка по маркети", ""]
+    for greska in k.get("greski", []):
+        linii += [f"⚠ Грешка во кошничката: {_md(greska)}", ""]
+    stavki = k.get("stavki", [])
+    if not stavki:
+        return [*linii, "Денес не е најден ниту еден производ од кошничката."]
+
+    linii += [
+        f"Основни производи за четиричлено семејство: **{len(stavki)}** ставки, секоја кај "
+        "маркетот каде што денес е најевтина по килограм, литар или парче. Влегува "
+        "најевтината стока од тој вид, без оглед на брендот, па погледни го називот. "
+        "★ акциска цена · 💳 само со картичка.",
+        "",
+        "| Каде | Производи | Неделно | Поскапо од најевтиното |",
+        "|---|--:|--:|--:|",
+    ]
+    for z in k.get("zbirovi", []):
+        ime = f"Сè во {z['s']}" if z["s"] else "**Секој производ каде што е најевтин**"
+        povekje = f"+{_cena(z['povekje'])}" if z["s"] else ""
+        linii.append(
+            f"| {ime} | {z['ima']} од {len(stavki)} | {_cena(z['vkupno'])} | {povekje} |"
+        )
+    linii += [
+        "",
+        "Неделните количини се проценка и се менуваат во `postavki.toml`. Маркет што нема "
+        "некој производ се споредува само за она што го има.",
+    ]
+
+    po_market: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for x in stavki:
+        po_market[x["kaj"]].append(x)
+    for sk, svoi in sorted(po_market.items(), key=lambda par: (-len(par[1]), par[0])):
+        ime = next(p["s"] for p in svoi[0]["p"] if p["sk"] == sk)
+        linii += [
+            "",
+            f"### {ime}: {len(svoi)}",
+            "",
+            "| Што | Најевтино | Цена | По единица | Другаде, по иста единица |",
+            "|---|---|--:|--:|---|",
+        ]
+        for x in svoi:
+            prva = next(p for p in x["p"] if p["sk"] == sk)
+            ostanati = [p for p in x["p"] if p["sk"] != sk]
+            znaci = ("💳 " if prva["kart"] else "") + ("★ " if prva["akc"] else "")
+            do = f" до {_datum_kratko(prva['do'])}" if prva["akc"] and prva["do"] else ""
+            do += " (клуб цена)" if prva["klub"] else ""
+            samo = f" (само {', '.join(prva['kade'])})" if prva["kade"] else ""
+            linii.append(
+                f"| {_md(x['ime'])} | {znaci}{_md(prva['n'])}{_md(samo)} "
+                f"| **{_cena(prva['c'])}** за {prva['g']}{do} | {_cena(prva['e'])}/{x['merka']} "
+                f"| {'; '.join(f'{_cena(o["e"])} {o["s"]}' for o in ostanati) or '–'} |"
+            )
+    if k.get("nenajdeni"):
+        linii += ["", "Денес не се најдени: " + ", ".join(_md(n) for n in k["nenajdeni"]) + "."]
+    return linii
+
+
 STATUSI = {
     "ok": "✅ прочитан",
     "prazen": "⚪ објавен празен ценовник",
@@ -292,6 +389,9 @@ def markdown(p: Podatoci) -> str:
         )
     if not p.prodavnici:
         linii.append("| – | – | уште нема читање | | | |")
+
+    if p.kosnicka:
+        linii += _md_kosnicka(p.kosnicka)
 
     if p.sledi:
         linii += ["", "## Твои производи", ""]
@@ -358,6 +458,7 @@ def html(p: Podatoci) -> str:
         "promeni": p.promeni,
         "sporedbi": p.sporedbi,
         "sledi": p.sledi,
+        "kosnicka": p.kosnicka,
     }
     vgradeno = json.dumps(sodrzina, ensure_ascii=False, separators=(",", ":"))
     # „</" во податоците не смее да го затвори <script>.

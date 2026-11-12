@@ -36,11 +36,13 @@
     position: sticky; top: 0; z-index: 5; background: var(--podloga);
     padding: .55rem 0 .5rem; border-bottom: 1px solid var(--linija);
   }
-  .jazicinja { display: flex; gap: .35rem; margin-bottom: .5rem; }
+  .jazicinja { display: flex; gap: .3rem; margin-bottom: .5rem; overflow-x: auto; scrollbar-width: none; }
+  .jazicinja::-webkit-scrollbar { display: none; }
   .jazicinja button {
-    flex: 1; min-height: 2.6rem; border: 1px solid var(--linija); border-radius: .6rem;
-    background: var(--karta); color: var(--tekst); font: inherit; font-size: .92rem;
+    flex: 1 0 auto; min-height: 2.6rem; padding: 0 .2rem; border: 1px solid var(--linija); border-radius: .6rem;
+    background: var(--karta); color: var(--tekst); font: inherit; font-size: .8rem;
   }
+  @media (min-width: 30rem) { .jazicinja button { font-size: .92rem; } }
   .jazicinja button[aria-selected="true"] {
     background: var(--akcent); border-color: var(--akcent); color: var(--akcent-tekst); font-weight: 600;
   }
@@ -84,6 +86,7 @@
   .oznaka.tivka { color: var(--tivok); font-weight: 500; }
   .red-sp { display: grid; grid-template-columns: 5.2rem 1fr; gap: .6rem; padding: .4rem 0;
     border-top: 1px solid var(--linija); font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .grupa { font-size: 1.05rem; line-height: 1.25; margin: 1.2rem 0 .5rem; }
   [hidden] { display: none !important; }
   .gore { color: var(--popust); font-weight: 700; }
   .dolu { color: var(--novo); font-weight: 700; }
@@ -108,6 +111,7 @@
   <div class="lenta">
     <div class="jazicinja" role="tablist">
       <button role="tab" data-pogled="akcii" aria-selected="true">Акции</button>
+      <button role="tab" data-pogled="kosnicka" aria-selected="false" id="jazice-kosnicka" hidden>Кошничка</button>
       <button role="tab" data-pogled="sporedba" aria-selected="false">Споредба</button>
       <button role="tab" data-pogled="promeni" aria-selected="false">Промени</button>
       <button role="tab" data-pogled="izvori" aria-selected="false">Извори</button>
@@ -251,6 +255,60 @@ function crtajSporedba() {
   if (kopce) kopce.onclick = () => { sostojba.prikazani += STRANA; crtajSporedba(); };
 }
 
+function crtajKosnicka() {
+  const k = D.kosnicka || {};
+  const stavki = k.stavki || [];
+  if (!stavki.length) {
+    el("sodrzina").innerHTML = '<p class="prazno">Денес не е најден ниту еден производ од кошничката.</p>';
+    return;
+  }
+  const zbirovi = (k.zbirovi || []).map((z) => `<div class="red-sp">
+      <span class="${z.s ? "" : "dolu"}">${cena(z.vkupno)}</span>
+      <span><b>${z.s ? "Сè во " + esc(z.s) : "Секој производ каде што е најевтин"}</b><br>
+        <span class="opis">${z.ima} од ${stavki.length} производи${z.s ? " · поскапо за " + cena(z.povekje) : ""}</span></span>
+    </div>`).join("");
+
+  const grupi = new Map();
+  stavki.forEach((x) => { if (!grupi.has(x.kaj)) grupi.set(x.kaj, []); grupi.get(x.kaj).push(x); });
+  const delovi = [...grupi].sort((a, b) => b[1].length - a[1].length).map(([sk, svoi]) => {
+    const ime = svoi[0].p.find((o) => o.sk === sk).s;
+    return `<h2 class="grupa">${esc(ime)} · ${svoi.length}</h2>` + svoi.map((x) => {
+      const prva = x.p.find((o) => o.sk === sk);
+      const oznaki = [];
+      if (prva.akc) oznaki.push(`<span class="oznaka novo">акција${prva.do ? " до " + datum(prva.do) : ""}</span>`);
+      if (prva.kart) oznaki.push('<span class="oznaka kart">само со картичка</span>');
+      if (prva.klub) oznaki.push('<span class="oznaka kart">клуб цена</span>');
+      if (prva.kade.length) oznaki.push(`<span class="oznaka tivka">само ${esc(prva.kade.join(", "))}</span>`);
+      return `<article class="karta">
+        <div class="naziv">${esc(x.ime)}</div>
+        <div class="opis">${esc(prva.n)}</div>
+        <div class="ceni">
+          <span class="cena">${cena(prva.c)}</span>
+          <span class="edinecna">за ${esc(prva.g)} · ${cena(prva.e)} / ${esc(x.merka)}</span>
+        </div>
+        ${oznaki.length ? `<div class="oznaki" style="margin:0 0 .45rem">${oznaki.join("")}</div>` : ""}
+        ${x.p.filter((o) => o.sk !== sk).map((o) => `<div class="red-sp">
+          <span>${cena(o.e)}</span>
+          <span><b>${esc(o.s)}</b>${o.akc ? " · акција" : ""}${o.kart ? " · со картичка" : ""}${o.klub ? " · клуб цена" : ""}<br>
+            <span class="opis">${esc(o.n)} · ${cena(o.c)} за ${esc(o.g)}</span></span>
+        </div>`).join("")}
+      </article>`;
+    }).join("");
+  }).join("");
+
+  const nema = (k.nenajdeni || []).length
+    ? `<p class="pod" style="margin-top:.8rem">Денес не се најдени: ${esc(k.nenajdeni.join(", "))}.</p>` : "";
+  el("sodrzina").innerHTML =
+    `<p class="pod" style="margin:0 0 .6rem">Основни производи за четиричлено семејство, секој кај маркетот каде
+      што денес е најевтин по килограм, литар или парче. Влегува најевтината стока од тој вид, без оглед на
+      брендот, па погледни го називот.</p>
+    <article class="karta">
+      <div class="naziv">Неделна кошничка</div>
+      <div class="opis">Количините се проценка. Маркет што нема некој производ се споредува само за она што го има.</div>
+      <div style="margin-top:.45rem">${zbirovi}</div>
+    </article>` + delovi + nema;
+}
+
 function crtajPromeni() {
   if (!D.promeni.length) {
     el("sodrzina").innerHTML = '<p class="prazno">Денес нема променета редовна цена во однос на претходното читање.</p>';
@@ -298,7 +356,8 @@ function crtaj() {
   el("alatki").hidden = sostojba.pogled !== "akcii" && !sp;
   el("sinjiri").hidden = sp;
   el("podredi").hidden = sp;
-  ({ akcii: crtajAkcii, sporedba: crtajSporedba, promeni: crtajPromeni, izvori: crtajIzvori })[sostojba.pogled]();
+  ({ akcii: crtajAkcii, kosnicka: crtajKosnicka, sporedba: crtajSporedba,
+    promeni: crtajPromeni, izvori: crtajIzvori })[sostojba.pogled]();
 }
 
 function cip(roditel, tekst, pritisnat, naKlik) {
@@ -341,6 +400,8 @@ function postavi() {
       + " продавници немаат денешен ценовник. Види „Извори“.";
     el("zastareno").after(p);
   }
+
+  el("jazice-kosnicka").hidden = !((D.kosnicka || {}).stavki || []).length;
 
   const filtri = [
     ["site", "Сите"], ["novi", "Нови денес"], ["istek", "Истекуваат"],
