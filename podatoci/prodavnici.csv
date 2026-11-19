@@ -1,14 +1,14 @@
 sinjir,sinjir_ime,prodavnica_id,prodavnica,adresa,status,poraka,datum_cenovnik,redovi,akcii,posledno_uspesno,izvor
-kam,КАМ,46,Штип,ул. Сутјеска 4Д,ok,,2026-11-17,1452,56,2026-11-18,https://kam.mk/2026/11/18/46.pdf
-kam,КАМ,23,Штип - 1,ул. Сремски Фронт бр. 7,ok,,2026-11-18,1970,61,2026-11-18,https://kam.mk/2026/11/18/23.pdf
-kam,КАМ,36,Штип - 2,Кеј Маршал Тито бр.19,ok,,2026-11-18,1668,54,2026-11-18,https://kam.mk/2026/11/18/36.pdf
+kam,КАМ,46,Штип,ул. Сутјеска 4Д,ok,,2026-11-18,1452,54,2026-11-19,https://kam.mk/2026/11/19/46.pdf
+kam,КАМ,23,Штип - 1,ул. Сремски Фронт бр. 7,ok,,2026-11-18,1970,58,2026-11-19,https://kam.mk/2026/11/19/23.pdf
+kam,КАМ,36,Штип - 2,Кеј Маршал Тито бр.19,ok,,2026-11-18,1668,50,2026-11-19,https://kam.mk/2026/11/19/36.pdf
 kipper,Кипер,kipper-167-shtip,KIPPER 167 SHTIP,,prazen,https://kipper.mk/mk/kipper-167-shtip/: ценовникот нема ниту еден ред,,,,,https://kipper.mk/mk/kipper-167-shtip/
-ramstore,Рамстор,ramstore-shtip,РАМСТОРЕ ШТИП,"ул. Тошо Арсов бр. 32, Штип",ok,,2026-11-18,6044,964,2026-11-18,https://ramstore.com.mk/marketi/ramstore-shtip/
-ramstore,Рамстор,ramstore-shtip-luna,РАМСТОРЕ ШТИП ЛУНА,"Ул. Борис Крајгер бр.20А, Штип",ok,,2026-11-18,7673,1178,2026-11-18,https://ramstore.com.mk/marketi/ramstore-shtip-luna/
-stokomak,Стокомак,30,ШТИП,,ok,,,2563,63,2026-11-18,https://stokomak.proverkanaceni.mk/?org=30
-stokomak,Стокомак,46,ШТИП 2,,ok,,,2718,62,2026-11-18,https://stokomak.proverkanaceni.mk/?org=46
-stokomak,Стокомак,71,ШТИП 3,,ok,,,2832,64,2026-11-18,https://stokomak.proverkanaceni.mk/?org=71
-zito,Жито маркети,24,24 Штип Сењак,,ok,,,1559,67,2026-11-18,https://zito.proverkanaceni.mk/?org=24
-zito,Жито маркети,75,75 Жито Штип 2 Влез,,ok,,,5523,659,2026-11-18,https://zito.proverkanaceni.mk/?org=75
+ramstore,Рамстор,ramstore-shtip,РАМСТОРЕ ШТИП,"ул. Тошо Арсов бр. 32, Штип",ok,,2026-11-19,6099,927,2026-11-19,https://ramstore.com.mk/marketi/ramstore-shtip/
+ramstore,Рамстор,ramstore-shtip-luna,РАМСТОРЕ ШТИП ЛУНА,"Ул. Борис Крајгер бр.20А, Штип",ok,,2026-11-19,7686,1104,2026-11-19,https://ramstore.com.mk/marketi/ramstore-shtip-luna/
+stokomak,Стокомак,30,ШТИП,,ok,,,2579,62,2026-11-19,https://stokomak.proverkanaceni.mk/?org=30
+stokomak,Стокомак,46,ШТИП 2,,ok,,,2695,60,2026-11-19,https://stokomak.proverkanaceni.mk/?org=46
+stokomak,Стокомак,71,ШТИП 3,,ok,,,2821,64,2026-11-19,https://stokomak.proverkanaceni.mk/?org=71
+zito,Жито маркети,24,24 Штип Сењак,,ok,,,2730,106,2026-11-19,https://zito.proverkanaceni.mk/?org=24
+zito,Жито маркети,75,75 Жито Штип 2 Влез,,ok,,,5566,717,2026-11-19,https://zito.proverkanaceni.mk/?org=75
 zito,Жито маркети,76,76 Жито Штип Центар,,prazen,https://zito.proverkanaceni.mk/?org=76: ценовникот нема ред,,,,,https://zito.proverkanaceni.mk/?org=76
-zito,Жито маркети,89,89 Штип градинка,,ok,,,7,0,2026-11-18,https://zito.proverkanaceni.mk/?org=89
+zito,Жито маркети,89,89 Штип градинка,,ok,,,7,0,2026-11-19,https://zito.proverkanaceni.mk/?org=89
